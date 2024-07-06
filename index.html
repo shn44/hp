@@ -1,69 +1,135 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestor de Estoque</title>
-    <!-- Adicione os scripts do Firebase no final da tag </body> -->
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database.js"></script>
+    <style>
+        h2{
+            color: red;
+            padding-left: 30%;
+            padding-right: auto;
+        }
+        body {
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            margin: 20px;
+            background-color: rgb(0, 0, 0);
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;            
+        }
+        input[type="text"], [type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+        button {
+            padding: 10px 20px;          
+            background-color: rgb(168, 18, 18);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            font-size: 18px;
+        }
+        button:hover {
+            background-color: green;
+        }
+        .product-list {
+            margin-top: 20px;
+            color: white;
+            padding-left: 15px;
+        }
+        .product-item {
+            padding: 10px;
+            border-bottom: 1px solid white;
+            display: inline-flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .product-item button {
+            background-color: red;
+        }
+        .product-item button.edit-btn {
+            background-color: rgb(0, 102, 255);
+        }
+    </style>
 </head>
 <body>
-    <!-- Conteúdo do seu site -->
-    <h1>Gestor de Estoque</h1>
-    <!-- Seus elementos HTML para adicionar/editar/remover produtos -->
+    <div class="container">
+        <h2>Gestor de Estoque</h2>
+        <input type="text" id="nomeProduto" placeholder="Nome do Produto">
+        <input type="number" id="valorProduto" placeholder="Valor">
+        <input type="number" id="quantidadeProduto" placeholder="Quantidade">
+        <br>
+        <button onclick="adicionarProduto()">Adicionar Produto</button>
+        <button onclick="calcularTotal()">Total Agregado</button>
+        <p id="resultado" style="color: grey;"></p>
+        <div class="product-list" id="listaProdutos">
+    <!-- Lista de Produtos será preenchida dinamicamente -->
+        </div>
+    </div>
     <script>
-        // Configuração e inicialização do Firebase
-        const firebaseConfig = {
-            apiKey: "sua-api-key",
-            authDomain: "seu-projeto.firebaseapp.com",
-            databaseURL: "https://seu-projeto.firebaseio.com",
-            projectId: "seu-projeto",
-            storageBucket: "seu-projeto.appspot.com",
-            messagingSenderId: "seu-sender-id",
-            appId: "seu-app-id"
-        };
+    // Simulação de uma lista de produtos
+        let produtos = []
 
-        // Inicialize o Firebase
-        firebase.initializeApp(firebaseConfig);
-
-        // Referência ao Realtime Database
-        const db = firebase.database();
-
-        // Funções para salvar e carregar dados
-        function salvarDadosFirebase() {
-            // Exemplo: salvar produtos
-            db.ref('produtos').set(produtos);
-        }
-
-        function carregarDadosFirebase() {
-            // Exemplo: carregar produtos
-            db.ref('produtos').once('value', snapshot => {
-                let dados = snapshot.val();
-                if (dados) {
-                    produtos = dados;
-                    exibirProdutos(); // Função para exibir produtos
-                }
-            });
-        }
-
-        // Chamar a função de carregar dados ao iniciar a página
-        carregarDadosFirebase();
-
-        // Funções para manipular produtos (exemplo)
         function adicionarProduto() {
-            // Lógica para adicionar um novo produto
-            salvarDadosFirebase(); // Salva os dados após adicionar
+            let nome = document.getElementById('nomeProduto').value;
+            let valor = parseFloat(document.getElementById('valorProduto').value);
+            let quantidade = parseInt(document.getElementById('quantidadeProduto').value)
+
+            if (nome && !isNaN(valor) && !isNaN(quantidade)) {
+                let id = produtos.length + 1; // Gera um ID simples para o produto
+                produtos.push({ id, nome, valor, quantidade });
+                exibirProdutos();
+                document.getElementById('nomeProduto').value = '';
+                document.getElementById('valorProduto').value = '';
+                document.getElementById('quantidadeProduto').value = '';
+                document.getElementById('resultado').innerText = 'Produto adicionado com sucesso!';
+                document.getElementById('resultado').style.color = '#008000';
+            } else {
+                document.getElementById('resultado').innerText = 'Por favor, preencha todos os campos CORRETAMENTE.';
+                document.getElementById('resultado').style.color = '#FF0000'
+            }
+        }
+
+        function exibirProdutos() {
+            let listaProdutos = document.getElementById('listaProdutos');
+            listaProdutos.innerHTML = '';
+            produtos.forEach(produto => {
+                let item = document.createElement('div');
+                item.classList.add('product-item');
+                item.innerHTML = `
+                    <span>${produto.nome}: R$${produto.valor.toFixed(2)} x ${produto.quantidade}</span>
+                    <button class="edit-btn" onclick="editarProduto(${produto.id})">Editar</button>
+                    <button onclick="removerProduto(${produto.id})">Remover</button>
+                `;
+                listaProdutos.appendChild(item);
+            }); 
         }
 
         function editarProduto(id) {
-            // Lógica para editar um produto existente
-            salvarDadosFirebase(); // Salva os dados após editar
+            let produto = produtos.find(p => p.id === id);
+            if (produto) {
+                document.getElementById('nomeProduto').value = produto.nome;
+                document.getElementById('valorProduto').value = produto.valor.toFixed(2);
+                document.getElementById('quantidadeProduto').value = produto.quantidade;
+                produtos = produtos.filter(p => p.id !== id); // Remove o produto da lista temporária
+                exibirProdutos(); // Atualiza a exibição da lista sem o produto editando
+            }
         }
 
         function removerProduto(id) {
-            // Lógica para remover um produto existente
-            salvarDadosFirebase(); // Salva os dados após remover
+            produtos = produtos.filter(p => p.id !== id)
+            exibirProdutos()
+        }
+
+        function calcularTotal() {
+            let total = produtos.reduce((acc, prod) => acc + (prod.valor * prod.quantidade), 0);
+            document.getElementById('resultado').innerText = `Total agregado: R$${total.toFixed(2)}`;
+            document.getElementById('resultado').style.color = '#2196F3';
         }
     </script>
 </body>
