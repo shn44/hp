@@ -111,6 +111,7 @@
 
     </div>
 
+    <!-- Diálogo para Registrar Venda -->
     <div id="dialogo" class="dialog">
         <p>Selecione o produto e quantidade vendida:</p>
         <select id="selectProduto">
@@ -119,6 +120,13 @@
         <input type="number" id="quantidadeVendida" placeholder="Quantidade Vendida">
         <button onclick="registrarVenda()">Registrar Venda</button>
         <button class="cancel" onclick="fecharDialogo()">Cancelar</button>
+    </div>
+
+    <!-- Diálogo para Remover Produto -->
+    <div id="dialogoRemover" class="dialog">
+        <p>Você deseja remover este produto?</p>
+        <button onclick="confirmarRemocao()">Sim</button>
+        <button class="cancel" onclick="fecharDialogoRemover()">Cancelar</button>
     </div>
 
     <script>
@@ -206,21 +214,21 @@
         }
 
         function abrirDialogoRemover(id) {
-            let dialogo = document.getElementById('dialogo');
+            let dialogo = document.getElementById('dialogoRemover');
             dialogo.dataset.produtoId = id;
             dialogo.style.display = 'block';
         }
 
         function confirmarRemocao() {
-            let id = document.getElementById('dialogo').dataset.produtoId;
+            let id = document.getElementById('dialogoRemover').dataset.produtoId;
             produtos = produtos.filter(p => p.id != id);
             salvarProdutos(); // Salvar no localStorage
             exibirProdutos(); // Atualizar a lista de produtos
-            fecharDialogo();
+            fecharDialogoRemover();
         }
 
-        function fecharDialogo() {
-            document.getElementById('dialogo').style.display = 'none';
+        function fecharDialogoRemover() {
+            document.getElementById('dialogoRemover').style.display = 'none';
         }
 
         function calcularTotal() {
@@ -230,31 +238,40 @@
         }
 
         function abrirDialogo() {
-            let dialogo = document.getElementById('dialogo');
-            dialogo.style.display = 'block';
+            document.getElementById('dialogo').style.display = 'block';
+        }
+
+        function fecharDialogo() {
+            document.getElementById('dialogo').style.display = 'none';
         }
 
         function registrarVenda() {
             let nome = document.getElementById('selectProduto').value;
             let quantidade = parseInt(document.getElementById('quantidadeVendida').value);
 
-            let produto = produtos.find(p => p.nome === nome);
-            if (produto && quantidade > 0 && quantidade <= produto.quantidade) {
-                produto.quantidade -= quantidade;
-                salvarProdutos(); // Atualiza quantidade de produtos em estoque
+            if (nome && !isNaN(quantidade)) {
+                let produto = produtos.find(p => p.nome === nome);
+                if (produto && produto.quantidade >= quantidade) {
+                    produto.quantidade -= quantidade;
+                    salvarProdutos(); // Salvar no localStorage
 
-                let vendaExistente = vendas.find(v => v.nome === nome);
-                if (vendaExistente) {
-                    vendaExistente.quantidade += quantidade;
+                    // Registrar a venda
+                    let vendaExistente = vendas.find(v => v.nome === nome);
+                    if (vendaExistente) {
+                        vendaExistente.quantidade += quantidade;
+                    } else {
+                        vendas.push({ nome, quantidade });
+                    }
+                    salvarVendas(); // Salvar no localStorage
+
+                    exibirProdutos();
+                    exibirVendas();
+                    document.getElementById('resultado').innerText = `Venda registrada: ${quantidade} unidades de ${nome}`;
+                    document.getElementById('resultado').style.color = '#008000';
                 } else {
-                    vendas.push({ nome, quantidade });
+                    document.getElementById('resultado').innerText = 'Quantidade insuficiente em estoque.';
+                    document.getElementById('resultado').style.color = '#FF0000';
                 }
-                salvarVendas(); // Salvar vendas no localStorage
-
-                exibirProdutos();
-                exibirVendas();
-                document.getElementById('resultado').innerText = `Venda registrada: ${quantidade} unidades de ${nome}`;
-                document.getElementById('resultado').style.color = '#008000';
             } else {
                 document.getElementById('resultado').innerText = 'Por favor, selecione um produto e insira uma quantidade válida.';
                 document.getElementById('resultado').style.color = '#FF0000';
