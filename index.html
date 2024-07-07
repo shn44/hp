@@ -38,32 +38,23 @@
         button:hover {
             background-color: green;
         }
-        .product-list {
+        .product-list, .sales-list {
             margin-top: 20px;
             color: white;
             padding-left: 15px;
         }
-        .product-item {
+        .product-item, .sale-item {
             padding: 10px;
             border-bottom: 1px solid white;
             display: inline-flex;
             justify-content: space-between;
             align-items: center;
         }
-        .product-item button {
+        .product-item button, .sale-item button {
             background-color: red;
         }
-        .product-item button.edit-btn {
+        .product-item button.edit-btn, .sale-item button.edit-btn {
             background-color: rgb(0, 102, 255);
-        }
-        .sales-list {
-            margin-top: 20px;
-            color: white;
-            padding-left: 15px;
-        }
-        .sale-item {
-            padding: 10px;
-            border-bottom: 1px solid white;
         }
         .dialog {
             display: none;
@@ -127,6 +118,14 @@
         <p>Você deseja remover este produto?</p>
         <button onclick="confirmarRemocao()">Sim</button>
         <button class="cancel" onclick="fecharDialogoRemover()">Cancelar</button>
+    </div>
+
+    <!-- Diálogo para Editar Venda -->
+    <div id="dialogoEditarVenda" class="dialog">
+        <p>Editar quantidade da venda:</p>
+        <input type="number" id="novaQuantidadeVenda" placeholder="Nova Quantidade">
+        <button onclick="editarVenda()">Salvar</button>
+        <button class="cancel" onclick="fecharDialogoEditarVenda()">Cancelar</button>
     </div>
 
     <script>
@@ -223,7 +222,7 @@
             let id = document.getElementById('dialogoRemover').dataset.produtoId;
             produtos = produtos.filter(p => p.id != id);
             salvarProdutos(); // Salvar no localStorage
-            exibirProdutos(); // Atualizar a lista de produtos
+            exibirProdutos();
             fecharDialogoRemover();
         }
 
@@ -286,10 +285,57 @@
             vendas.forEach(venda => {
                 let item = document.createElement('div');
                 item.classList.add('sale-item');
-                item.innerHTML = `${venda.nome}: ${venda.quantidade} unidades`;
+                item.innerHTML = `
+                    <span>${venda.nome}: ${venda.quantidade} unidades</span>
+                    <button class="edit-btn" onclick="abrirDialogoEditarVenda('${venda.nome}')">Editar</button>
+                    <button onclick="abrirDialogoRemoverVenda('${venda.nome}')">Remover</button>
+                `;
                 registroVendas.appendChild(item);
             });
         }
+
+        function abrirDialogoEditarVenda(nome) {
+            let dialogoEditarVenda = document.getElementById('dialogoEditarVenda');
+            dialogoEditarVenda.dataset.vendaNome = nome;
+            dialogoEditarVenda.style.display = 'block';
+        }
+
+        function fecharDialogoEditarVenda() {
+            document.getElementById('dialogoEditarVenda').style.display = 'none';
+        }
+
+        function editarVenda() {
+            let nome = document.getElementById('dialogoEditarVenda').dataset.vendaNome;
+            let novaQuantidade = parseInt(document.getElementById('novaQuantidadeVenda').value);
+
+            if (nome && !isNaN(novaQuantidade)) {
+                let venda = vendas.find(v => v.nome === nome);
+                if (venda) {
+                    venda.quantidade = novaQuantidade;
+                    salvarVendas(); // Salvar no localStorage
+                    exibirVendas();
+                    document.getElementById('resultado').innerText = `Venda de ${nome} atualizada para ${novaQuantidade} unidades.`;
+                    document.getElementById('resultado').style.color = '#008000';
+                }
+            }
+
+            fecharDialogoEditarVenda();
+        }
+
+        function abrirDialogoRemoverVenda(nome) {
+            let dialogoRemover = document.getElementById('dialogoRemover');
+            dialogoRemover.dataset.vendaNome = nome;
+            dialogoRemover.style.display = 'block';
+        }
+
+        function confirmarRemocaoVenda() {
+            let nome = document.getElementById('dialogoRemover').dataset.vendaNome;
+            vendas = vendas.filter(v => v.nome !== nome);
+            salvarVendas(); // Salvar no localStorage
+            exibirVendas();
+            fecharDialogoRemover();
+        }
+
     </script>
 </body>
 </html>
