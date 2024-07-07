@@ -177,15 +177,28 @@
             let quantidade = parseInt(document.getElementById('quantidadeProduto').value);
 
             if (nome && !isNaN(valor) && !isNaN(quantidade)) {
-                let id = produtos.length + 1; // Gera um ID simples para o produto
-                produtos.push({ id, nome, valor, quantidade });
-                salvarProdutos(); // Salvar no localStorage
-                exibirProdutos();
+                // Verifica se o produto já existe na lista
+                let produtoExistente = produtos.find(p => p.nome === nome);
+                if (produtoExistente) {
+                    // Se existir, apenas soma a quantidade
+                    produtoExistente.quantidade += quantidade;
+                    salvarProdutos(); // Salvar no localStorage
+                    exibirProdutos(); // Atualizar a exibição dos produtos
+                    document.getElementById('resultado').innerText = `Quantidade de ${nome} atualizada para ${produtoExistente.quantidade}`;
+                    document.getElementById('resultado').style.color = '#008000';
+                } else {
+                    // Se não existir, adiciona um novo produto
+                    let id = produtos.length + 1; // Gera um ID simples para o produto
+                    produtos.push({ id, nome, valor, quantidade });
+                    salvarProdutos(); // Salvar no localStorage
+                    exibirProdutos(); // Atualizar a exibição dos produtos
+                    document.getElementById('resultado').innerText = 'Produto adicionado com sucesso!';
+                    document.getElementById('resultado').style.color = '#008000';
+                }
+
                 document.getElementById('nomeProduto').value = '';
                 document.getElementById('valorProduto').value = '';
                 document.getElementById('quantidadeProduto').value = '';
-                document.getElementById('resultado').innerText = 'Produto adicionado com sucesso!';
-                document.getElementById('resultado').style.color = '#008000';
             } else {
                 document.getElementById('resultado').innerText = 'Por favor, preencha todos os campos CORRETAMENTE.';
                 document.getElementById('resultado').style.color = '#FF0000';
