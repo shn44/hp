@@ -64,6 +64,28 @@
             padding: 10px;
             border-bottom: 1px solid white;
         }
+        .dialog {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid black;
+            z-index: 1000;
+        }
+        .dialog button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #008000;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .dialog button.cancel {
+            background-color: #FF0000;
+        }
     </style>
 </head>
 <body>
@@ -84,7 +106,16 @@
         <div id="registroVendas" class="sales-list">
             <!-- Lista de vendas será preenchida dinamicamente -->
         </div>
+
+        <button onclick="abrirDialogo()">Registrar Venda</button>
     </div>
+
+    <div id="dialogo" class="dialog">
+        <p>Deseja realmente remover este produto?</p>
+        <button onclick="confirmarRemocao()">Sim</button>
+        <button class="cancel" onclick="fecharDialogo()">Cancelar</button>
+    </div>
+
     <script>
         let produtos = [];
         let vendas = [];
@@ -142,7 +173,7 @@
                 item.innerHTML = `
                     <span>${produto.nome}: R$${produto.valor.toFixed(2)} x ${produto.quantidade}</span>
                     <button class="edit-btn" onclick="editarProduto(${produto.id})">Editar</button>
-                    <button onclick="removerProduto(${produto.id})">Remover</button>
+                    <button onclick="abrirDialogoRemover(${produto.id})">Remover</button>
                 `;
                 listaProdutos.appendChild(item);
             }); 
@@ -160,10 +191,22 @@
             }
         }
 
-        function removerProduto(id) {
-            produtos = produtos.filter(p => p.id !== id);
+        function abrirDialogoRemover(id) {
+            let dialogo = document.getElementById('dialogo');
+            dialogo.dataset.produtoId = id;
+            dialogo.style.display = 'block';
+        }
+
+        function confirmarRemocao() {
+            let id = document.getElementById('dialogo').dataset.produtoId;
+            produtos = produtos.filter(p => p.id != id);
             salvarProdutos(); // Salvar no localStorage
-            exibirProdutos();
+            exibirProdutos(); // Atualizar a lista de produtos
+            fecharDialogo();
+        }
+
+        function fecharDialogo() {
+            document.getElementById('dialogo').style.display = 'none';
         }
 
         function calcularTotal() {
@@ -172,28 +215,17 @@
             document.getElementById('resultado').style.color = '#2196F3';
         }
 
-        function registrarVenda() {
+        function abrirDialogo() {
             let nome = document.getElementById('nomeProduto').value;
             let quantidade = parseInt(document.getElementById('quantidadeProduto').value);
 
             if (nome && !isNaN(quantidade)) {
                 let produto = produtos.find(p => p.nome === nome);
                 if (produto && produto.quantidade >= quantidade) {
-                    produto.quantidade -= quantidade;
-                    salvarProdutos(); // Atualiza quantidade de produtos em estoque
-
-                    let vendaExistente = vendas.find(v => v.nome === nome);
-                    if (vendaExistente) {
-                        vendaExistente.quantidade += quantidade;
-                    } else {
-                        vendas.push({ nome, quantidade });
-                    }
-                    salvarVendas(); // Salvar vendas no localStorage
-
-                    exibirProdutos();
-                    exibirVendas();
-                    document.getElementById('resultado').innerText = `Venda registrada: ${quantidade} unidades de ${nome}`;
-                    document.getElementById('resultado').style.color = '#008000';
+                    let dialogo = document.getElementById('dialogo');
+                    dialogo.dataset.produtoNome = nome;
+                    dialogo.dataset.produtoQuantidade = quantidade;
+                    dialogo.style.display = 'block';
                 } else {
                     document.getElementById('resultado').innerText = 'Quantidade insuficiente em estoque para essa venda.';
                     document.getElementById('resultado').style.color = '#FF0000';
@@ -202,6 +234,32 @@
                 document.getElementById('resultado').innerText = 'Por favor, preencha todos os campos CORRETAMENTE.';
                 document.getElementById('resultado').style.color = '#FF0000';
             }
+        }
+
+        function registrarVenda() {
+            let nome = document.getElementById('dialogo').dataset.produtoNome;
+            let quantidade = parseInt(document.getElementById('dialogo').dataset.produtoQuantidade);
+
+            let produto = produtos.find(p => p.nome === nome);
+            if (produto) {
+                produto.quantidade -= quantidade;
+                salvarProdutos(); // Atualiza quantidade de produtos em estoque
+
+                let vendaExistente = vendas.find(v => v.nome === nome);
+                if (vendaExistente) {
+                    vendaExistente.quantidade += quantidade;
+                } else {
+                    vendas.push({ nome, quantidade });
+                }
+                salvarVendas(); // Salvar vendas no localStorage
+
+                exibirProdutos();
+                exibirVendas();
+                document.getElementById('resultado').innerText = `Venda registrada: ${quantidade} unidades de ${nome}`;
+                document.getElementById('resultado').style.color = '#008000';
+            }
+
+            fecharDialogo();
         }
 
         function exibirVendas() {
