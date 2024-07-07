@@ -113,11 +113,11 @@
         <button class="cancel" onclick="fecharDialogo()">Cancelar</button>
     </div>
 
-    <!-- Diálogo para Remover Produto -->
-    <div id="dialogoRemover" class="dialog">
-        <p>Você deseja remover este produto?</p>
-        <button onclick="confirmarRemocao()">Sim</button>
-        <button class="cancel" onclick="fecharDialogoRemover()">Cancelar</button>
+    <!-- Diálogo para Remover Venda -->
+    <div id="dialogoRemoverVenda" class="dialog">
+        <p>Você deseja remover esta venda?</p>
+        <button onclick="confirmarRemocaoVenda()">Sim</button>
+        <button class="cancel" onclick="fecharDialogoRemoverVenda()">Cancelar</button>
     </div>
 
     <!-- Diálogo para Editar Venda -->
@@ -218,16 +218,16 @@
             dialogo.style.display = 'block';
         }
 
-        function confirmarRemocao() {
+        function fecharDialogoRemover() {
+            document.getElementById('dialogoRemover').style.display = 'none';
+        }
+
+        function removerProduto() {
             let id = document.getElementById('dialogoRemover').dataset.produtoId;
-            produtos = produtos.filter(p => p.id != id);
+            produtos = produtos.filter(p => p.id !== parseInt(id));
             salvarProdutos(); // Salvar no localStorage
             exibirProdutos();
             fecharDialogoRemover();
-        }
-
-        function fecharDialogoRemover() {
-            document.getElementById('dialogoRemover').style.display = 'none';
         }
 
         function calcularTotal() {
@@ -323,17 +323,21 @@
         }
 
         function abrirDialogoRemoverVenda(nome) {
-            let dialogoRemover = document.getElementById('dialogoRemover');
-            dialogoRemover.dataset.vendaNome = nome;
-            dialogoRemover.style.display = 'block';
+            let dialogoRemoverVenda = document.getElementById('dialogoRemoverVenda');
+            dialogoRemoverVenda.dataset.vendaNome = nome;
+            dialogoRemoverVenda.style.display = 'block';
+        }
+
+        function fecharDialogoRemoverVenda() {
+            document.getElementById('dialogoRemoverVenda').style.display = 'none';
         }
 
         function confirmarRemocaoVenda() {
-            let nome = document.getElementById('dialogoRemover').dataset.vendaNome;
+            let nome = document.getElementById('dialogoRemoverVenda').dataset.vendaNome;
             vendas = vendas.filter(v => v.nome !== nome);
             salvarVendas(); // Salvar no localStorage
             exibirVendas();
-            fecharDialogoRemover();
+            fecharDialogoRemoverVenda();
         }
 
     </script>
