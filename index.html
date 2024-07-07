@@ -33,6 +33,7 @@
             cursor: pointer;
             font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
             font-size: 18px;
+            margin-right: 10px;
         }
         button:hover {
             background-color: green;
@@ -97,6 +98,7 @@
         <br>
         <button onclick="adicionarProduto()">Adicionar Produto</button>
         <button onclick="calcularTotal()">Total Agregado</button>
+        <button onclick="abrirDialogo()">Registrar Venda</button>
         <p id="resultado" style="color: grey;"></p>
         <div class="product-list" id="listaProdutos">
             <!-- Lista de Produtos será preenchida dinamicamente -->
@@ -107,12 +109,15 @@
             <!-- Lista de vendas será preenchida dinamicamente -->
         </div>
 
-        <button onclick="abrirDialogo()">Registrar Venda</button>
     </div>
 
     <div id="dialogo" class="dialog">
-        <p>Deseja realmente remover este produto?</p>
-        <button onclick="confirmarRemocao()">Sim</button>
+        <p>Selecione o produto e quantidade vendida:</p>
+        <select id="selectProduto">
+            <!-- Options serão preenchidos dinamicamente -->
+        </select>
+        <input type="number" id="quantidadeVendida" placeholder="Quantidade Vendida">
+        <button onclick="registrarVenda()">Registrar Venda</button>
         <button class="cancel" onclick="fecharDialogo()">Cancelar</button>
     </div>
 
@@ -133,6 +138,15 @@
                 vendas = JSON.parse(vendasSalvas);
                 exibirVendas();
             }
+
+            // Preencher select de produtos no diálogo de venda
+            let selectProduto = document.getElementById('selectProduto');
+            produtos.forEach(produto => {
+                let option = document.createElement('option');
+                option.value = produto.nome;
+                option.innerText = produto.nome;
+                selectProduto.appendChild(option);
+            });
         });
 
         function salvarProdutos() {
@@ -216,32 +230,16 @@
         }
 
         function abrirDialogo() {
-            let nome = document.getElementById('nomeProduto').value;
-            let quantidade = parseInt(document.getElementById('quantidadeProduto').value);
-
-            if (nome && !isNaN(quantidade)) {
-                let produto = produtos.find(p => p.nome === nome);
-                if (produto && produto.quantidade >= quantidade) {
-                    let dialogo = document.getElementById('dialogo');
-                    dialogo.dataset.produtoNome = nome;
-                    dialogo.dataset.produtoQuantidade = quantidade;
-                    dialogo.style.display = 'block';
-                } else {
-                    document.getElementById('resultado').innerText = 'Quantidade insuficiente em estoque para essa venda.';
-                    document.getElementById('resultado').style.color = '#FF0000';
-                }
-            } else {
-                document.getElementById('resultado').innerText = 'Por favor, preencha todos os campos CORRETAMENTE.';
-                document.getElementById('resultado').style.color = '#FF0000';
-            }
+            let dialogo = document.getElementById('dialogo');
+            dialogo.style.display = 'block';
         }
 
         function registrarVenda() {
-            let nome = document.getElementById('dialogo').dataset.produtoNome;
-            let quantidade = parseInt(document.getElementById('dialogo').dataset.produtoQuantidade);
+            let nome = document.getElementById('selectProduto').value;
+            let quantidade = parseInt(document.getElementById('quantidadeVendida').value);
 
             let produto = produtos.find(p => p.nome === nome);
-            if (produto) {
+            if (produto && quantidade > 0 && quantidade <= produto.quantidade) {
                 produto.quantidade -= quantidade;
                 salvarProdutos(); // Atualiza quantidade de produtos em estoque
 
@@ -257,6 +255,9 @@
                 exibirVendas();
                 document.getElementById('resultado').innerText = `Venda registrada: ${quantidade} unidades de ${nome}`;
                 document.getElementById('resultado').style.color = '#008000';
+            } else {
+                document.getElementById('resultado').innerText = 'Por favor, selecione um produto e insira uma quantidade válida.';
+                document.getElementById('resultado').style.color = '#FF0000';
             }
 
             fecharDialogo();
