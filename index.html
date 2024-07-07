@@ -115,7 +115,7 @@
                 let item = document.createElement('div');
                 item.classList.add('product-item');
                 item.innerHTML = `
-                    <span>${produto.nome}: R$${produto.valor.toFixed(2)} x ${produto.quantidade}</span>
+                    <span>${produto.nome}: R$${produto.valor.toFixed(2)} | ${produto.quantidade}X</span>
                     <button class="edit-btn" onclick="editarProduto(${produto.id})">Editar</button>
                     <button onclick="removerProduto(${produto.id})">Remover</button>
                 `;
