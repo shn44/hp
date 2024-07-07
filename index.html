@@ -113,6 +113,13 @@
         <button class="cancel" onclick="fecharDialogo()">Cancelar</button>
     </div>
 
+    <!-- Diálogo para Remover Produto -->
+    <div id="dialogoRemoverProduto" class="dialog">
+        <p>Você deseja remover este produto?</p>
+        <button onclick="confirmarRemocaoProduto()">Sim</button>
+        <button class="cancel" onclick="fecharDialogoRemoverProduto()">Cancelar</button>
+    </div>
+
     <!-- Diálogo para Remover Venda -->
     <div id="dialogoRemoverVenda" class="dialog">
         <p>Você deseja remover esta venda?</p>
@@ -194,7 +201,7 @@
                 item.innerHTML = `
                     <span>${produto.nome}: R$${produto.valor.toFixed(2)} x ${produto.quantidade}</span>
                     <button class="edit-btn" onclick="editarProduto(${produto.id})">Editar</button>
-                    <button onclick="abrirDialogoRemover(${produto.id})">Remover</button>
+                    <button onclick="abrirDialogoRemoverProduto(${produto.id})">Remover</button>
                 `;
                 listaProdutos.appendChild(item);
             }); 
@@ -212,22 +219,22 @@
             }
         }
 
-        function abrirDialogoRemover(id) {
-            let dialogo = document.getElementById('dialogoRemover');
-            dialogo.dataset.produtoId = id;
-            dialogo.style.display = 'block';
+        function abrirDialogoRemoverProduto(id) {
+            let dialogoRemoverProduto = document.getElementById('dialogoRemoverProduto');
+            dialogoRemoverProduto.dataset.produtoId = id;
+            dialogoRemoverProduto.style.display = 'block';
         }
 
-        function fecharDialogoRemover() {
-            document.getElementById('dialogoRemover').style.display = 'none';
+        function fecharDialogoRemoverProduto() {
+            document.getElementById('dialogoRemoverProduto').style.display = 'none';
         }
 
-        function removerProduto() {
-            let id = document.getElementById('dialogoRemover').dataset.produtoId;
+        function confirmarRemocaoProduto() {
+            let id = document.getElementById('dialogoRemoverProduto').dataset.produtoId;
             produtos = produtos.filter(p => p.id !== parseInt(id));
             salvarProdutos(); // Salvar no localStorage
             exibirProdutos();
-            fecharDialogoRemover();
+            fecharDialogoRemoverProduto();
         }
 
         function calcularTotal() {
@@ -339,7 +346,6 @@
             exibirVendas();
             fecharDialogoRemoverVenda();
         }
-
     </script>
 </body>
 </html>
