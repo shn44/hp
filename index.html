@@ -55,6 +55,15 @@
         .product-item button.edit-btn {
             background-color: rgb(0, 102, 255);
         }
+        .sales-list {
+            margin-top: 20px;
+            color: white;
+            padding-left: 15px;
+        }
+        .sale-item {
+            padding: 10px;
+            border-bottom: 1px solid white;
+        }
     </style>
 </head>
 <body>
@@ -70,21 +79,37 @@
         <div class="product-list" id="listaProdutos">
             <!-- Lista de Produtos será preenchida dinamicamente -->
         </div>
+
+        <h2>Registro de Vendas</h2>
+        <div id="registroVendas" class="sales-list">
+            <!-- Lista de vendas será preenchida dinamicamente -->
+        </div>
     </div>
     <script>
         let produtos = [];
+        let vendas = [];
 
-        // Carregar produtos salvos ao carregar a página
+        // Carregar produtos e vendas salvos ao carregar a página
         document.addEventListener('DOMContentLoaded', () => {
             let produtosSalvos = localStorage.getItem('produtos');
             if (produtosSalvos) {
                 produtos = JSON.parse(produtosSalvos);
                 exibirProdutos();
             }
+
+            let vendasSalvas = localStorage.getItem('vendas');
+            if (vendasSalvas) {
+                vendas = JSON.parse(vendasSalvas);
+                exibirVendas();
+            }
         });
 
         function salvarProdutos() {
             localStorage.setItem('produtos', JSON.stringify(produtos));
+        }
+
+        function salvarVendas() {
+            localStorage.setItem('vendas', JSON.stringify(vendas));
         }
 
         function adicionarProduto() {
@@ -115,7 +140,7 @@
                 let item = document.createElement('div');
                 item.classList.add('product-item');
                 item.innerHTML = `
-                    <span>${produto.nome}: R$${produto.valor.toFixed(2)} | ${produto.quantidade}X</span>
+                    <span>${produto.nome}: R$${produto.valor.toFixed(2)} x ${produto.quantidade}</span>
                     <button class="edit-btn" onclick="editarProduto(${produto.id})">Editar</button>
                     <button onclick="removerProduto(${produto.id})">Remover</button>
                 `;
@@ -145,6 +170,49 @@
             let total = produtos.reduce((acc, prod) => acc + (prod.valor * prod.quantidade), 0);
             document.getElementById('resultado').innerText = `Total agregado: R$${total.toFixed(2)}`;
             document.getElementById('resultado').style.color = '#2196F3';
+        }
+
+        function registrarVenda() {
+            let nome = document.getElementById('nomeProduto').value;
+            let quantidade = parseInt(document.getElementById('quantidadeProduto').value);
+
+            if (nome && !isNaN(quantidade)) {
+                let produto = produtos.find(p => p.nome === nome);
+                if (produto && produto.quantidade >= quantidade) {
+                    produto.quantidade -= quantidade;
+                    salvarProdutos(); // Atualiza quantidade de produtos em estoque
+
+                    let vendaExistente = vendas.find(v => v.nome === nome);
+                    if (vendaExistente) {
+                        vendaExistente.quantidade += quantidade;
+                    } else {
+                        vendas.push({ nome, quantidade });
+                    }
+                    salvarVendas(); // Salvar vendas no localStorage
+
+                    exibirProdutos();
+                    exibirVendas();
+                    document.getElementById('resultado').innerText = `Venda registrada: ${quantidade} unidades de ${nome}`;
+                    document.getElementById('resultado').style.color = '#008000';
+                } else {
+                    document.getElementById('resultado').innerText = 'Quantidade insuficiente em estoque para essa venda.';
+                    document.getElementById('resultado').style.color = '#FF0000';
+                }
+            } else {
+                document.getElementById('resultado').innerText = 'Por favor, preencha todos os campos CORRETAMENTE.';
+                document.getElementById('resultado').style.color = '#FF0000';
+            }
+        }
+
+        function exibirVendas() {
+            let registroVendas = document.getElementById('registroVendas');
+            registroVendas.innerHTML = '<h3>Produtos Vendidos</h3>';
+            vendas.forEach(venda => {
+                let item = document.createElement('div');
+                item.classList.add('sale-item');
+                item.innerHTML = `${venda.nome}: ${venda.quantidade} unidades`;
+                registroVendas.appendChild(item);
+            });
         }
     </script>
 </body>
