@@ -72,7 +72,7 @@ function exibirProdutos() {
         let item = document.createElement('div');
         item.classList.add('product-item');
         item.innerHTML = `
-            <span>${produto.nome}: R$${produto.valor.toFixed(2)} x ${produto.quantidade}</span>
+            <span>${produto.nome}: R$${produto.valor.toFixed(2)} | ${produto.quantidade}X</span>
             <div>
                 <button class="edit-btn" onclick="editarProduto(${produto.id})">Editar</button>
                 <button onclick="abrirDialogoRemoverProduto(${produto.id})">Remover</button>
@@ -131,7 +131,7 @@ function fecharDialogo() {
 function registrarVenda() {
     let produtoNome = document.getElementById('selectProduto').value;
     let quantidade = parseInt(document.getElementById('quantidadeVendida').value);
-
+    
     if (produtoNome && !isNaN(quantidade)) {
         let produto = produtos.find(p => p.nome === produtoNome);
         if (produto && produto.quantidade >= quantidade) {
